@@ -1,0 +1,233 @@
+openapi: 3.1.0
+info:
+  title: Earnings Radar Pro API
+  version: 1.0.0
+  description: API for quotes, history, news, FX, and structured investment analysis.
+servers:
+  - url: https://YOUR-VERCEL-PROJECT.vercel.app
+paths:
+  /api/quote:
+    get:
+      operationId: getQuote
+      summary: Get current quote for an asset
+      parameters:
+        - name: symbol
+          in: query
+          required: true
+          schema:
+            type: string
+        - name: assetType
+          in: query
+          required: false
+          schema:
+            type: string
+            enum: [stock, crypto, forex, commodity, etf, index]
+      responses:
+        '200':
+          description: Current quote
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  symbol: { type: string }
+                  assetType: { type: string }
+                  price: { type: number }
+                  changePercent: { type: number }
+                  volume: { type: number }
+                  currency: { type: string }
+                  timestamp: { type: string, format: date-time }
+                  name: { type: string }
+                  exchange: { type: string }
+
+  /api/history:
+    get:
+      operationId: getHistory
+      summary: Get historical candles for chart analysis
+      parameters:
+        - name: symbol
+          in: query
+          required: true
+          schema:
+            type: string
+        - name: interval
+          in: query
+          required: false
+          schema:
+            type: string
+            enum: [1min, 5min, 15min, 1h, 4h, 1day, 1week]
+        - name: outputsize
+          in: query
+          required: false
+          schema:
+            type: integer
+            default: 200
+      responses:
+        '200':
+          description: Historical OHLCV data
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  symbol: { type: string }
+                  interval: { type: string }
+                  candles:
+                    type: array
+                    items:
+                      type: object
+                      properties:
+                        time: { type: string, format: date-time }
+                        open: { type: number }
+                        high: { type: number }
+                        low: { type: number }
+                        close: { type: number }
+                        volume: { type: number }
+
+  /api/news:
+    get:
+      operationId: getNews
+      summary: Get latest news for an asset or topic
+      parameters:
+        - name: query
+          in: query
+          required: true
+          schema:
+            type: string
+        - name: limit
+          in: query
+          required: false
+          schema:
+            type: integer
+            default: 5
+      responses:
+        '200':
+          description: News list
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  query: { type: string }
+                  articles:
+                    type: array
+                    items:
+                      type: object
+                      properties:
+                        title: { type: string }
+                        source: { type: string }
+                        publishedAt: { type: string, format: date-time }
+                        url: { type: string }
+                        summary: { type: string }
+                        sentiment:
+                          type: string
+                          enum: [bullish, bearish, neutral]
+
+  /api/fx:
+    get:
+      operationId: getFxRate
+      summary: Get FX rate for currency conversion
+      parameters:
+        - name: base
+          in: query
+          required: true
+          schema:
+            type: string
+            example: USD
+        - name: quote
+          in: query
+          required: true
+          schema:
+            type: string
+            example: EUR
+      responses:
+        '200':
+          description: FX rate
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  base: { type: string }
+                  quote: { type: string }
+                  rate: { type: number }
+                  timestamp: { type: string, format: date-time }
+
+  /api/investment-analysis:
+    post:
+      operationId: getInvestmentAnalysis
+      summary: Generate a structured investment analysis for an asset
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [symbol]
+              properties:
+                symbol:
+                  type: string
+                assetType:
+                  type: string
+                  enum: [stock, crypto, forex, commodity, etf, index]
+                includeTechnical:
+                  type: boolean
+                  default: true
+                includeFundamental:
+                  type: boolean
+                  default: false
+                includeNews:
+                  type: boolean
+                  default: true
+                includeMacro:
+                  type: boolean
+                  default: false
+                timeframe:
+                  type: string
+                  enum: [intraday, swing, position]
+                  default: swing
+      responses:
+        '200':
+          description: Structured analysis result
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  symbol: { type: string }
+                  summary: { type: string }
+                  technical:
+                    type: object
+                    properties:
+                      trend: { type: string }
+                      support:
+                        type: array
+                        items: { type: number }
+                      resistance:
+                        type: array
+                        items: { type: number }
+                      rsi: { type: number, nullable: true }
+                      macdSignal: { type: string }
+                      movingAverages:
+                        type: object
+                        properties:
+                          ma50: { type: number, nullable: true }
+                          ma200: { type: number, nullable: true }
+                      elliottWaveView: { type: string }
+                  newsImpact:
+                    type: object
+                    properties:
+                      overallSentiment: { type: string }
+                      keyDrivers:
+                        type: array
+                        items: { type: string }
+                  scenarios:
+                    type: object
+                    properties:
+                      bullCase: { type: string }
+                      bearCase: { type: string }
+                      riskLevel: { type: string }
+                  score:
+                    type: integer
+                    minimum: 0
+                    maximum: 100
