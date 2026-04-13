@@ -3,9 +3,12 @@ info:
   title: Earnings Radar Pro API
   version: 1.0.0
   description: API for quotes, history, news, FX, and structured investment analysis.
+
 servers:
-  - url: https://YOUR-VERCEL-PROJECT.vercel.app
+  - url: https://earnings-radar-api.vercel.app
+
 paths:
+
   /api/quote:
     get:
       operationId: getQuote
